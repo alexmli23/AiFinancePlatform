@@ -42,3 +42,4 @@ const reportSchema = new mongoose.Schema<ReportDocument>({
 })
 
 const ReportModel = mongoose.model<ReportDocument>("Report", reportSchema)
+export default ReportModel

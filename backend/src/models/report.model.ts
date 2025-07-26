@@ -10,5 +10,7 @@ export interface ReportDocument extends Document {
     userId: mongoose.Types.ObjectId
     period: string
     sentDate: Date
-    status:
+    status: keyof typeof ReportStatusEnum
+    createdAt: Date
+    updatedAt: Date
 }
