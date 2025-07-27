@@ -11,6 +11,7 @@ import authRoutes from "./routes/auth.routes"
 import passport from "passport"
 import { passportAuthenticateJwt } from "./config/passport.config"
 import userRoutes from "./routes/user.routes"
+import transactionRoutes from "./routes/transaction.route"
 
 const app = express()
 const BASE_PATH = Env.BASE_PATH
@@ -36,6 +37,7 @@ app.get("/", asyncHandler(async (req:Request, res: Response, next:NextFunction) 
 
 app.use(`${BASE_PATH}/auth`, authRoutes)
 app.use(`${BASE_PATH}/user`, passportAuthenticateJwt, userRoutes)
+app.use(`${BASE_PATH}/transaction`, passportAuthenticateJwt, transactionRoutes)
 
 app.use(errorHandler)
 

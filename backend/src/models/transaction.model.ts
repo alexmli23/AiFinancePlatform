@@ -54,7 +54,7 @@ const transactionSchema = new mongoose.Schema<TransactionDocument>({
         ref: "User"
     },
     title: {
-        title: String,
+        type: String,
         required: true,
 
     },
@@ -72,7 +72,6 @@ const transactionSchema = new mongoose.Schema<TransactionDocument>({
 
     description: {
         type: String,
-        required: true
     },
     category: {
         type: String,
