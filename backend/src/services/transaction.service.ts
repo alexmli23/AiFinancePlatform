@@ -134,3 +134,57 @@ export const updateTransactionService = async(userId: string, transactionId: str
     await exisitingTransaction.save()
     return
 }
+
+export const deleteTransactionService = async (userId: string, transactionId: string) => {
+    const deleted = await TransactionModel.findOne({
+        _id: transactionId,
+        userId
+    })
+
+    if(!deleted) throw new NotFoundException("Transaction not found")
+    return
+}
+
+export const bulkDeleteTransactionService = async(userId: string, transactionIds: string[]) => {
+    const result = await TransactionModel.deleteMany({
+        _id: {$in: transactionIds},
+        userId, 
+    })
+
+    if(result.deletedCount === 0) throw new NotFoundException("No transactions found")
+
+    return {
+        success: true,
+        deletedCount: result.deletedCount
+    }
+}
+
+export const bulkTransactionService = async (userId: string, transactions: CreateTransactionType[]):
+Promise<{ insertedCount: number; success: boolean }> => {
+    try{
+        const bulkOps = transactions.map((tx) => ({
+            insertOne: {
+                document: {
+                    ...tx,
+                    userId,
+                    isRecurring: false,
+                    nextRecurringDate: null,
+                    recurringInterval: null,
+                    lastProcesses: null,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            }
+        }))
+        const result = await TransactionModel.bulkWrite(bulkOps, {
+            ordered: true
+        })
+
+        return {
+            insertedCount: result.insertedCount,
+            success: true
+        }
+    }catch(err){
+        throw err
+    }
+}

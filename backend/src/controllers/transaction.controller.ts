@@ -1,8 +1,8 @@
 import {Request, Response} from "express"
 import { asyncHandler } from "../middlewares/asyncHandler.middleware"
 import { HTTPSTATUS } from "../config/http.config"
-import { createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validators/transaction.validator"
-import { createTransactionService, duplicateTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.service"
+import { bulkDeleteTransactionSchema, bulkTransactionSchema, createTransactionSchema, transactionIdSchema, updateTransactionSchema } from "../validators/transaction.validator"
+import { bulkDeleteTransactionService, bulkTransactionService, createTransactionService, deleteTransactionService, duplicateTransactionService, getAllTransactionService, getTransactionByIdService, updateTransactionService } from "../services/transaction.service"
 import { TransactionTypeEnum } from "../models/transaction.model"
 import { NotFoundException } from "../utils/app-error"
 
@@ -75,5 +75,40 @@ export const updateTransactionController = asyncHandler(async (req: Request, res
     return res.status(HTTPSTATUS.OK).json({
         message: "transaction updated successfully",
         data: updatedTransaction
+    })
+})
+
+export const deleteTransactionController = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id
+    const transactionId = transactionIdSchema.parse(req.params.id)
+
+    await deleteTransactionService(userId as string, transactionId)
+
+    return res.status(HTTPSTATUS.OK).json({
+        message: "transaction deleted successfully",
+    })
+})
+
+export const bulkDeleteTransactionController = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id
+    const {transactionIds} = bulkDeleteTransactionSchema.parse(req.body)
+
+    const result = await bulkDeleteTransactionService(userId as string, transactionIds)
+
+    return res.status(HTTPSTATUS.OK).json({
+        message: "Transaction deleted successfully",
+        ...result
+    })
+})
+
+export const bulkTransactionController = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id
+    const { transactions } = bulkTransactionSchema.parse(req.body)
+
+    const result = await bulkTransactionService(userId as string, transactions)
+
+    return res.status(HTTPSTATUS.OK).json({
+        message: "Bulk Transaction inserted successfully",
+        ...result
     })
 })
