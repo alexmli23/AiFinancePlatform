@@ -21,3 +21,15 @@ const storage = new CloudinaryStorage({
         ...STORAGE_PARAMS
     })
 })
+
+export const upload = multer({
+    storage,
+    limits: {fileSize: 2 * 1024 * 1024, files: 1},
+    fileFilter: (_, file, cb) => {
+        const isValid = /^image\/(jpe?g|png)$/.test(file.mimetype);
+        if(!isValid){
+
+        }
+        cb(null, true);
+    }
+})

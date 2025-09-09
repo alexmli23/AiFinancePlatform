@@ -1,10 +1,13 @@
 import { exit } from "process"
 import { asyncHandler } from "../middlewares/asyncHandler.middleware"
 import TransactionModel, { TransactionTypeEnum } from "../models/transaction.model"
-import { NotFoundException } from "../utils/app-error"
+import { BadRequestException, NotFoundException } from "../utils/app-error"
 import { calculateNextOccurrence } from "../utils/helper"
 import { createTransactionSchema } from "../validators/transaction.validator"
 import {CreateTransactionType, UpdateTransactionType} from "../validators/transaction.validator"
+import axios from "axios"
+import { genAI, genAIModel } from "../config/google-ai.config"
+import { createUserContent } from "@google/genai"
 
 export const createTransactionService = async (body: CreateTransactionType, userId: string) => {
     let nextRecurringDate: Date | undefined
@@ -186,5 +189,30 @@ Promise<{ insertedCount: number; success: boolean }> => {
         }
     }catch(err){
         throw err
+    }
+}
+
+export const scanReceiptService = async(file: Express.Multer.File | undefined) =>{
+    if (!file) throw new BadRequestException("No file uploaded")
+    
+    try{
+        if (!file.path) throw new BadRequestException("Failed to upload file")
+        
+        console.log(file.path)
+        const responseDate = await axios.get(file.path, {
+            responseType: "arraybuffer"
+        })
+        const base64String = Buffer.from(responseDate.data).toString("base64")
+
+        if(!base64String) throw new BadRequestException("Could not process file")
+        
+        const result = await genAI.models.generateContent({
+            model: genAIModel,
+            contents: [
+                createUserContent()
+            ]
+        })
+    }catch (error){
+
     }
 }
