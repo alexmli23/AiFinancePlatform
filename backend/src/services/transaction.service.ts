@@ -7,7 +7,8 @@ import { createTransactionSchema } from "../validators/transaction.validator"
 import {CreateTransactionType, UpdateTransactionType} from "../validators/transaction.validator"
 import axios from "axios"
 import { genAI, genAIModel } from "../config/google-ai.config"
-import { createUserContent } from "@google/genai"
+import { createPartFromBase64, createUserContent } from "@google/genai"
+import { receiptPrompt } from "../utils/prompt"
 
 export const createTransactionService = async (body: CreateTransactionType, userId: string) => {
     let nextRecurringDate: Date | undefined
@@ -209,10 +210,33 @@ export const scanReceiptService = async(file: Express.Multer.File | undefined) =
         const result = await genAI.models.generateContent({
             model: genAIModel,
             contents: [
-                createUserContent()
-            ]
+                createUserContent([
+                    receiptPrompt,
+                    createPartFromBase64(base64String, file.mimetype),
+                ])
+            ],
+            config:{ temperature: 0, topP: 1, responseMimeType: "application/json"}
         })
-    }catch (error){
+        const response = result.text
+        const cleanedText = response?.replace(/```(?:json)?\n?/g, "").trim();
 
+        if (!cleanedText) return {error: "Could not read reciept content"}
+
+        const data = JSON.parse(cleanedText)
+        if (!data.amount || !data.date){
+            return {error: "Reciept missing required information"}
+        }
+        return {
+            title: data.title || "Receipt",
+            amount: data.amount,
+            date: data.date,
+            description: data.description,
+            category: data.category,
+            paymentMethod: data.paymentMethod,
+            type: data.type,
+            receiptUrl: file.path
+        }
+    }catch (error){
+        return {error: "Reciept scanning service unavaliable"}
     }
 }

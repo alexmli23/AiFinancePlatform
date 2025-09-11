@@ -1,6 +1,7 @@
 import {Router} from "express"
-import { bulkDeleteTransactionController, bulkTransactionController, createTransactionController, deleteTransactionController, duplicateTransactionController, getTransactionByIdController, updateTransactionController } from "../controllers/transaction.controller"
+import { bulkDeleteTransactionController, bulkTransactionController, createTransactionController, deleteTransactionController, duplicateTransactionController, getTransactionByIdController, scanReceiptController, updateTransactionController } from "../controllers/transaction.controller"
 import { getAllTransactionsController } from "../controllers/transaction.controller"
+import { upload } from "../config/cloudinary.config"
 
 const transactionRoutes = Router()
 
@@ -12,5 +13,6 @@ transactionRoutes.put("/update/:id", updateTransactionController)
 transactionRoutes.post("/bulk-transaction", bulkTransactionController)
 transactionRoutes.delete("/delete/:id", deleteTransactionController)
 transactionRoutes.delete("/bulk-delete",bulkDeleteTransactionController)
+transactionRoutes.post("/scan-receipt", upload.single("receipt"), scanReceiptController)
 
 export default transactionRoutes

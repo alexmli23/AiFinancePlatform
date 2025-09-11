@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary'
 import { Env } from './env.config'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
+import multer from "multer";
 
 cloudinary.config({
     cloud_name: Env.CLOUDINARY_CLOUD_NAME,
@@ -28,7 +29,7 @@ export const upload = multer({
     fileFilter: (_, file, cb) => {
         const isValid = /^image\/(jpe?g|png)$/.test(file.mimetype);
         if(!isValid){
-
+            return 
         }
         cb(null, true);
     }
